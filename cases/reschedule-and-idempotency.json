@@ -1,0 +1,114 @@
+{
+  "name": "reschedule and idempotency",
+  "flow": [
+    {
+      "module": "listEventTypes",
+      "mapper": {
+        "limit": 1,
+        "active": true
+      }
+    },
+    {
+      "module": "listSlots",
+      "mapper": {
+        "identify_by": "id",
+        "event_type_id": "{{1.id}}",
+        "start": "{{addDays(now, 1)}}",
+        "end": "{{addDays(now, 3)}}",
+        "limit": 1
+      }
+    },
+    {
+      "module": "createBooking",
+      "mapper": {
+        "identify_by": "id",
+        "event_type_id": "{{1.id}}",
+        "start": "{{2.start}}",
+        "attendee_email": "dev.test.user+make@42min.us",
+        "attendee_name": "Reschedule test",
+        "idempotency_key": "make-replay-{{2.start}}"
+      }
+    },
+    {
+      "module": "createBooking",
+      "mapper": {
+        "identify_by": "id",
+        "event_type_id": "{{1.id}}",
+        "start": "{{2.start}}",
+        "attendee_email": "dev.test.user+make@42min.us",
+        "attendee_name": "Reschedule test",
+        "idempotency_key": "make-replay-{{2.start}}"
+      }
+    },
+    {
+      "module": "listSlots",
+      "mapper": {
+        "identify_by": "id",
+        "event_type_id": "{{1.id}}",
+        "start": "{{addDays(now, 8)}}",
+        "end": "{{addDays(now, 10)}}",
+        "limit": 1
+      },
+      "filter": {
+        "name": "same key replayed the first booking",
+        "conditions": [
+          [
+            {
+              "a": "{{4.uid}}",
+              "b": "{{3.uid}}",
+              "o": "text:equal"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "module": "rescheduleBooking",
+      "mapper": {
+        "uid": "{{3.uid}}",
+        "start": "{{5.start}}",
+        "reason": "Automated test"
+      }
+    },
+    {
+      "module": "cancelBooking",
+      "mapper": {
+        "uid": "{{6.uid}}",
+        "reason": "Automated test cleanup"
+      },
+      "filter": {
+        "name": "reschedule moved the booking",
+        "conditions": [
+          [
+            {
+              "a": "{{6.start_at}}",
+              "b": "{{3.start_at}}",
+              "o": "text:notequal"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "module": "makeApiCall",
+      "mapper": {
+        "url": "/v1/me",
+        "method": "GET",
+        "headers": [],
+        "qs": []
+      },
+      "filter": {
+        "name": "booking ended canceled",
+        "conditions": [
+          [
+            {
+              "a": "{{7.status}}",
+              "b": "canceled",
+              "o": "text:equal"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

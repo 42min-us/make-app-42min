@@ -1,0 +1,14 @@
+{
+  "name": "write chain",
+  "flow": [
+    { "module": "listEventTypes", "mapper": { "limit": 1, "active": true } },
+    { "module": "listSlots", "mapper": { "identify_by": "id", "event_type_id": "{{1.id}}", "start": "{{addDays(now, 1)}}", "end": "{{addDays(now, 7)}}", "limit": 1 } },
+    { "module": "createBooking", "mapper": {
+        "identify_by": "id", "event_type_id": "{{1.id}}", "start": "{{2.start}}",
+        "attendee_email": "dev.test.user+make@42min.us", "attendee_name": "Make test",
+        "metadata": [{ "key": "source", "value": "make-app-test" }] } },
+    { "module": "getBooking", "mapper": { "uid": "{{3.uid}}" } },
+    { "module": "updateBooking", "mapper": { "uid": "{{3.uid}}", "attendee_name": "Make test renamed", "metadata": [{ "key": "step", "value": "updated" }] } },
+    { "module": "cancelBooking", "mapper": { "uid": "{{3.uid}}", "reason": "Automated test of the Make app" } }
+  ]
+}

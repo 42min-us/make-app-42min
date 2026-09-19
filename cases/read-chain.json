@@ -1,0 +1,11 @@
+{
+  "name": "read chain",
+  "flow": [
+    { "module": "listEventTypes", "mapper": { "limit": 1, "active": true } },
+    { "module": "getEventType", "mapper": { "identify_by": "id", "event_type_id": "{{1.id}}" } },
+    { "module": "getEventType", "mapper": { "identify_by": "slug", "username": "{{1.hosts[1].username}}", "event_slug": "{{1.slug}}" } },
+    { "module": "listSlots", "mapper": { "identify_by": "id", "event_type_id": "{{1.id}}", "start": "{{now}}", "end": "{{addDays(now, 7)}}", "limit": 3 } },
+    { "module": "checkSlot", "mapper": { "identify_by": "id", "event_type_id": "{{1.id}}", "start": "{{4.start}}" } },
+    { "module": "listBookings", "mapper": { "limit": 3, "status": ["confirmed"] } }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "booking date filters",
+  "flow": [
+    { "module": "listBookings", "mapper": { "limit": 5, "start_date": "{{addDays(now, -30)}}", "end_date": "{{addDays(now, 30)}}", "sort": "start_at_asc", "include_cancelled": true } },
+    { "module": "listBookings", "mapper": { "limit": 5, "updated_since": "{{addDays(now, -1)}}", "include_cancelled": true } },
+    { "module": "getCurrentUser", "mapper": {} }
+  ]
+}

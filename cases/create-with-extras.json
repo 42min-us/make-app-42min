@@ -1,0 +1,20 @@
+{
+  "name": "create with guests, metadata and timezones",
+  "flow": [
+    { "module": "listEventTypes", "mapper": { "limit": 1, "active": true } },
+    { "module": "listSlots", "mapper": { "identify_by": "id", "event_type_id": "{{1.id}}", "start": "{{addDays(now, 2)}}", "end": "{{addDays(now, 4)}}", "limit": 1, "timezone": "Europe/Lisbon" } },
+    { "module": "createBooking", "mapper": {
+        "identify_by": "id", "event_type_id": "{{1.id}}", "start": "{{2.start}}",
+        "attendee_email": "dev.test.user+make@42min.us", "attendee_name": "Extras test",
+        "attendee_timezone": "Europe/Lisbon", "timezone": "Europe/Lisbon",
+        "guests": ["dev.test.user+make-guest@42min.us"],
+        "metadata": [{ "key": "crm_deal_id", "value": "D-4471" }, { "key": "source", "value": "make" }] } },
+    { "module": "getBooking", "mapper": { "uid": "{{3.uid}}" } },
+    { "module": "cancelBooking", "mapper": { "uid": "{{3.uid}}", "reason": "Automated test cleanup" },
+      "filter": { "name": "guests, metadata and timezone stored", "conditions": [[
+        { "a": "{{4.guests[1].email}}", "b": "dev.test.user+make-guest@42min.us", "o": "text:equal" },
+        { "a": "{{4.metadata.crm_deal_id}}", "b": "D-4471", "o": "text:equal" },
+        { "a": "{{4.timezone}}", "b": "Europe/Lisbon", "o": "text:equal" },
+        { "a": "{{4.attendees[1].timezone}}", "b": "Europe/Lisbon", "o": "text:equal" } ]] } }
+  ]
+}

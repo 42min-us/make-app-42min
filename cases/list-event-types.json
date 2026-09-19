@@ -1,0 +1,4 @@
+{
+  "name": "list event types",
+  "flow": [{ "module": "listEventTypes", "mapper": { "limit": 5 } }]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "error handling",
+  "flow": [
+    { "module": "getBooking", "mapper": { "uid": "bkg_does_not_exist" } }
+  ]
+}
