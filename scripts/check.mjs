@@ -5,8 +5,10 @@
 import { base, connection, groups } from '../src/app.mjs';
 import { modules } from '../src/modules.mjs';
 import { rpcs } from '../src/rpcs.mjs';
+import { webhooks } from '../src/webhooks.mjs';
 
 const SEARCH = 9;
+const INSTANT = 10;
 const UNIVERSAL = 12;
 const problems = [];
 const fail = (msg) => problems.push(msg);
@@ -42,6 +44,11 @@ for (const m of modules) {
     if (limit?.advanced) fail(`${m.name}: limit must never be advanced`);
     const api = [m.api].flat();
     if (!api.some((r) => r.response?.iterate)) fail(`${m.name}: search module does not iterate`);
+  } else if (m.typeId === INSTANT) {
+    if (!m.webhook) fail(`${m.name}: instant trigger without a webhook`);
+    if (!webhooks.some((w) => w.name === m.webhook)) fail(`${m.name}: unknown webhook ${m.webhook}`);
+    if (!/^Watch /.test(m.label)) fail(`${m.name}: a trigger's label should start with "Watch"`);
+    if (!/^Triggers when /.test(m.description)) fail(`${m.name}: a trigger's description should start with "Triggers when"`);
   } else if (m.typeId !== UNIVERSAL) {
     const api = [m.api].flat();
     if (api.some((r) => r.response?.iterate || r.pagination)) {
@@ -69,6 +76,19 @@ if (universal.length !== 1) fail(`expected exactly one universal module, found $
 for (const m of universal) {
   if (!/^__API_ORIGIN__\//.test(m.api.url)) fail(`${m.name}: universal URL must be the fixed origin plus a user path`);
   if (m.label !== 'Make an API call') fail(`${m.name}: universal module label must be "Make an API call"`);
+}
+
+// Webhooks: attached, so both procedures must exist, and the detach has to use
+// what the attach stored.
+for (const w of webhooks) {
+  if (!w.attach?.url || !w.detach?.url) fail(`${w.name}: an attached webhook needs attach and detach`);
+  const stored = Object.keys(w.attach?.response?.data ?? {});
+  const used = (w.detach?.url ?? '').match(/webhook\.([a-zA-Z]+)/g) ?? [];
+  for (const u of used) {
+    const key = u.split('.')[1];
+    if (!stored.includes(key)) fail(`${w.name}: detach uses webhook.${key}, which attach never stored`);
+  }
+  if (!w.attach.body?.url?.includes('webhook.url')) fail(`${w.name}: attach does not register the webhook URL`);
 }
 
 // RPCs

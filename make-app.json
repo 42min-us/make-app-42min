@@ -2,5 +2,10 @@
   "name": "fortytwomin-jd2oso",
   "version": 1,
   "label": "42min",
-  "connection": "fortytwomin-jd2oso"
+  "connection": "fortytwomin-jd2oso",
+  "webhooks": {
+    "watchBookingsHook": "fortytwomin-jd2oso",
+    "watchEventTypesHook": "fortytwomin-jd2oso2",
+    "watchRoutingFormsHook": "fortytwomin-jd2oso3"
+  }
 }

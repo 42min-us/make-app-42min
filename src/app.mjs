@@ -25,7 +25,7 @@ export const base = {
     // A non-JSON body (a proxy error page) still yields a readable message.
     error: {
       message:
-        "[{{statusCode}}] {{ifempty(body.error.message, 'Unexpected response from 42min.')}}{{if(body.error.code, ' (' + body.error.code + ')', '')}}",
+        "[{{statusCode}}] {{ifempty(body.error.message, 'Unexpected response from 42min. If a required ID or date was left empty, fill it in and run the scenario again.')}}{{if(body.error.code, ' (' + body.error.code + ')', '')}}",
     },
   },
   log: { sanitize: ['request.headers.authorization'] },
@@ -59,7 +59,7 @@ export const connection = {
     response: {
       error: {
         message:
-          "[{{statusCode}}] {{ifempty(body.error.message, 'Unexpected response from 42min.')}}{{if(body.error.code, ' (' + body.error.code + ')', '')}}",
+          "[{{statusCode}}] {{ifempty(body.error.message, 'Unexpected response from 42min. If a required ID or date was left empty, fill it in and run the scenario again.')}}{{if(body.error.code, ' (' + body.error.code + ')', '')}}",
       },
       metadata: { type: 'email', value: '{{body.data.user.email}}' },
     },
@@ -68,11 +68,16 @@ export const connection = {
 };
 
 export const groups = [
+  { label: 'Triggers', modules: ['watchBookings', 'watchEventTypes', 'watchRoutingForms'] },
   {
     label: 'Bookings',
     modules: ['createBooking', 'getBooking', 'updateBooking', 'rescheduleBooking', 'cancelBooking', 'listBookings'],
   },
   { label: 'Availability', modules: ['listSlots', 'checkSlot'] },
+  {
+    label: 'Recurring series',
+    modules: ['createSeries', 'getSeries', 'listSeries', 'updateSeries', 'pauseSeries', 'resumeSeries', 'endSeries', 'changeSeriesHost'],
+  },
   { label: 'Event types', modules: ['getEventType', 'listEventTypes'] },
   { label: 'Account', modules: ['getCurrentUser'] },
   { label: 'Other', modules: ['makeApiCall'] },

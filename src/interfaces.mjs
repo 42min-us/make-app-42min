@@ -144,3 +144,92 @@ export const me = [
     spec: [text('id', 'Organization ID'), text('name', 'Name'), text('plan', 'Plan')],
   },
 ];
+
+// Instant trigger output: the delivery envelope plus the record it carries.
+const envelopeFields = [
+  text('event_id', 'Event ID'),
+  text('event', 'Event'),
+  date('occurred_at', 'Occurred at'),
+  text('api_version', 'Payload version'),
+  text('delivery_id', 'Delivery ID'),
+];
+
+export const bookingEvent = [
+  ...envelopeFields,
+  ...booking.filter((f) => !['version', 'event_type_slug', 'calendar_sync_status', 'calendar_event_id', 'rescheduled_from_uid', 'created_at', 'updated_at'].includes(f.name)),
+  { name: 'responses_by_id', type: 'any', label: 'Answers by question ID' },
+  { name: 'routing_form_answers', type: 'any', label: 'Routing form answers' },
+  date('rescheduled_at', 'Rescheduled at'),
+  uint('reschedule_generation', 'Reschedule number'),
+  date('previous_start_at', 'Previous start'),
+  date('previous_end_at', 'Previous end'),
+  { name: 'changed_fields', type: 'array', label: 'Changed fields', spec: { name: 'field', type: 'text', label: 'Field' } },
+];
+
+export const eventTypeEvent = [...envelopeFields, ...eventTypeDetail];
+
+export const routingFormEvent = [
+  ...envelopeFields,
+  text('id', 'Response ID'),
+  text('routing_form_id', 'Routing form ID'),
+  text('form_name', 'Form name'),
+  { name: 'answers', type: 'any', label: 'Answers' },
+  text('destination_type', 'Destination type'),
+  text('destination_value', 'Destination value'),
+  text('organization_id', 'Organization ID'),
+];
+
+export const series = [
+  text('uid', 'Series UID'),
+  uint('version', 'Version'),
+  {
+    name: 'event_type',
+    type: 'collection',
+    label: 'Event type',
+    spec: [text('id', 'ID'), text('slug', 'Slug'), text('name', 'Name')],
+  },
+  {
+    name: 'host',
+    type: 'collection',
+    label: 'Host',
+    spec: [text('user_id', 'User ID'), text('username', 'Username'), { name: 'email', type: 'email', label: 'Email' }],
+  },
+  {
+    name: 'attendee',
+    type: 'collection',
+    label: 'Attendee',
+    spec: [text('name', 'Name'), { name: 'email', type: 'email', label: 'Email' }, text('phone', 'Phone')],
+  },
+  text('frequency', 'Frequency'),
+  uint('interval_weeks', 'Weeks between repeats'),
+  { name: 'weekdays', type: 'array', label: 'Weekdays', spec: { name: 'day', type: 'text', label: 'Day' } },
+  text('time', 'Time of day'),
+  text('timezone', 'Timezone'),
+  date('starts_on', 'Starts on'),
+  uint('count', 'Meetings requested'),
+  text('status', 'Status'),
+  { name: 'location_url', type: 'url', label: 'Fixed meeting link' },
+  bool('notify_invitee', 'Emails the attendee'),
+  text('source', 'Created through'),
+  date('created_at', 'Created at'),
+  date('updated_at', 'Updated at'),
+  date('ended_at', 'Ended at'),
+];
+
+// Every series action answers with the same envelope, and fills in only the
+// fields that apply to it.
+export const seriesAction = [
+  uint('held', 'Meetings put on hold'),
+  uint('created', 'Meetings rebooked'),
+  uint('owed', 'Meetings still owed'),
+  uint('canceled', 'Meetings canceled'),
+  uint('moved', 'Meetings moved to the new host'),
+  uint('unchanged', 'Meetings already with that host'),
+  text('stopped_by', 'Stopped because'),
+  {
+    name: 'skipped',
+    type: 'array',
+    label: 'Dates skipped',
+    spec: [date('date', 'Date'), text('reason', 'Reason')],
+  },
+];

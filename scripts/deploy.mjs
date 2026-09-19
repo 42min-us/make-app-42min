@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { app as appMeta, base, connection, groups } from '../src/app.mjs';
 import { modules } from '../src/modules.mjs';
 import { rpcs } from '../src/rpcs.mjs';
+import { webhooks, signatureProbe } from '../src/webhooks.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'make-app.json');
@@ -97,6 +98,36 @@ async function main() {
   // Base
   await call('PUT', `/sdk/apps/${name}/${version}/base`, withOrigin(base));
 
+  // Webhooks, before the modules that bind to them. Make names a webhook
+  // itself (the first one takes the app's own name), so ours are matched by
+  // label and the mapping is kept in make-app.json.
+  state.webhooks ??= {};
+  const remoteHooks = async () => (await call('GET', `/sdk/apps/${name}/webhooks`)).appWebhooks ?? [];
+  for (const w of webhooks) {
+    if (!state.webhooks[w.name]) {
+      const before = DRY ? [] : await remoteHooks();
+      let hook = before.find((h) => h.label === w.label);
+      if (!hook) {
+        await call('POST', `/sdk/apps/${name}/webhooks`, { type: w.type, label: w.label, connection: conn });
+        hook = DRY ? { name: `<${w.name}>` } : (await remoteHooks()).find((h) => h.label === w.label);
+      }
+      state.webhooks[w.name] = hook.name;
+      if (!DRY) await writeFile(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`);
+    }
+    const remote = state.webhooks[w.name];
+    const putHook = (section, payload) =>
+      call('PUT', `/sdk/apps/webhooks/${remote}/${section}`, withOrigin(payload));
+    const api =
+      process.env.SIGNATURE_PROBE === '1' && w.name === 'watchBookingsHook'
+        ? { ...w.api, output: { ...w.api.output, ...signatureProbe } }
+        : w.api;
+    await putHook('api', api);
+    await putHook('parameters', w.parameters ?? []);
+    await putHook('attach', w.attach);
+    await putHook('detach', w.detach);
+    console.log(`webhook ${w.name} -> ${remote}`);
+  }
+
   // Modules
   const existing = DRY ? [] : listNames(await call('GET', `/sdk/apps/${name}/${version}/modules`), 'appModules');
   for (const m of modules) {
@@ -106,7 +137,7 @@ async function main() {
         typeId: m.typeId,
         label: m.label,
         description: m.description,
-        connection: conn,
+        ...(m.webhook ? { webhook: state.webhooks[m.webhook] } : { connection: conn }),
         moduleInitMode: 'blank',
         ...(m.crud ? { crud: m.crud } : {}),
       });
@@ -114,14 +145,15 @@ async function main() {
       await call('PATCH', `/sdk/apps/${name}/${version}/modules/${m.name}`, {
         label: m.label,
         description: m.description,
-        connection: conn,
+        // A trigger belongs to its webhook, which carries the connection.
+        ...(m.webhook ? {} : { connection: conn }),
       });
     }
     const put = (section, payload) =>
       call('PUT', `/sdk/apps/${name}/${version}/modules/${m.name}/${section}`, withOrigin(payload));
-    await put('api', m.api);
+    if (Object.keys(m.api ?? {}).length) await put('api', m.api);
     await put('parameters', m.parameters ?? []);
-    await put('expect', m.expect ?? []);
+    if (!m.webhook) await put('expect', m.expect ?? []);
     await put('interface', m.interface ?? []);
     console.log(`module ${m.name}`);
   }

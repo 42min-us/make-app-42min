@@ -1,7 +1,33 @@
 {
   "name": "cancel leftover test bookings",
   "flow": [
-    { "module": "listBookings", "mapper": { "limit": 20, "status": ["confirmed"], "attendee_email": "dev.test.user+make@42min.us" } },
-    { "module": "cancelBooking", "mapper": { "uid": "{{1.uid}}", "reason": "Automated test cleanup" } }
+    {
+      "module": "listBookings",
+      "mapper": {
+        "limit": 20,
+        "status": [
+          "confirmed"
+        ],
+        "attendee_email": "dev.test.user+make@42min.us"
+      }
+    },
+    {
+      "module": "cancelBooking",
+      "mapper": {
+        "uid": "{{1.uid}}",
+        "reason": "Automated test cleanup"
+      },
+      "filter": {
+        "name": "only when there is something to cancel",
+        "conditions": [
+          [
+            {
+              "a": "{{1.uid}}",
+              "o": "exist"
+            }
+          ]
+        ]
+      }
+    }
   ]
 }
