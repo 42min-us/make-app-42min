@@ -1,31 +1,151 @@
 {
   "name": "series lifecycle",
   "flow": [
-    { "module": "getCurrentUser", "mapper": {} },
-    { "module": "listEventTypes", "mapper": { "limit": 1, "active": true } },
-    { "module": "createSeries", "mapper": {
-        "identify_by": "id", "event_type_id": "{{2.id}}", "host_user_id": "{{1.user.id}}",
-        "attendee_email": "dev.test.user+make@42min.us", "attendee_name": "Series test",
-        "frequency": "weekly", "weekdays": ["mon", "tue", "wed", "thu", "fri"],
-        "time": "10:00", "starts_on": "{{addDays(now, 1)}}", "count": 2, "notify_invitee": false } },
-    { "module": "getSeries", "mapper": { "uid": "{{3.uid}}" } },
-    { "module": "updateSeries", "mapper": { "uid": "{{3.uid}}", "time": "11:00" },
-      "filter": { "name": "created with the pattern we asked for", "conditions": [[
-        { "a": "{{4.time}}", "b": "10:00", "o": "text:equal" },
-        { "a": "{{4.status}}", "b": "active", "o": "text:equal" },
-        { "a": "{{4.count}}", "b": "2", "o": "text:equal" } ]] } },
-    { "module": "pauseSeries", "mapper": { "uid": "{{3.uid}}" },
-      "filter": { "name": "update moved the time", "conditions": [[
-        { "a": "{{5.time}}", "b": "11:00", "o": "text:equal" } ]] } },
-    { "module": "resumeSeries", "mapper": { "uid": "{{3.uid}}" },
-      "filter": { "name": "pause reported what it held", "conditions": [[
-        { "a": "{{6.held}}", "o": "exist" } ]] } },
-    { "module": "endSeries", "mapper": { "uid": "{{3.uid}}" } },
-    { "module": "getSeries", "mapper": { "uid": "{{3.uid}}" },
-      "filter": { "name": "end reported a count", "conditions": [[
-        { "a": "{{8.canceled}}", "o": "exist" } ]] } },
-    { "module": "listSeries", "mapper": { "limit": 5, "status": "ended" },
-      "filter": { "name": "series is ended", "conditions": [[
-        { "a": "{{9.status}}", "b": "ended", "o": "text:equal" } ]] } }
+    {
+      "module": "getCurrentUser",
+      "mapper": {}
+    },
+    {
+      "module": "getEventType",
+      "mapper": {
+        "identify_by": "slug",
+        "username": "weje",
+        "event_slug": "rec-evt"
+      }
+    },
+    {
+      "module": "createSeries",
+      "mapper": {
+        "identify_by": "id",
+        "event_type_id": "{{2.id}}",
+        "host_user_id": "{{1.user.id}}",
+        "attendee_email": "dev.test.user+make@42min.us",
+        "attendee_name": "Series test",
+        "frequency": "weekly",
+        "weekdays": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "time": "10:00",
+        "starts_on": "{{addDays(now, 1)}}",
+        "count": 2,
+        "notify_invitee": false
+      }
+    },
+    {
+      "module": "getSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      }
+    },
+    {
+      "module": "updateSeries",
+      "mapper": {
+        "uid": "{{3.uid}}",
+        "time": "11:00"
+      },
+      "filter": {
+        "name": "created with the pattern we asked for",
+        "conditions": [
+          [
+            {
+              "a": "{{4.time}}",
+              "b": "10:00",
+              "o": "text:equal"
+            },
+            {
+              "a": "{{4.status}}",
+              "b": "active",
+              "o": "text:equal"
+            },
+            {
+              "a": "{{4.count}}",
+              "b": "2",
+              "o": "text:equal"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "module": "pauseSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      },
+      "filter": {
+        "name": "update moved the time",
+        "conditions": [
+          [
+            {
+              "a": "{{5.time}}",
+              "b": "11:00",
+              "o": "text:equal"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "module": "resumeSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      },
+      "filter": {
+        "name": "pause reported what it held",
+        "conditions": [
+          [
+            {
+              "a": "{{6.held}}",
+              "o": "exist"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "module": "endSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      }
+    },
+    {
+      "module": "getSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      },
+      "filter": {
+        "name": "end reported a count",
+        "conditions": [
+          [
+            {
+              "a": "{{8.canceled}}",
+              "o": "exist"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "module": "listSeries",
+      "mapper": {
+        "limit": 5,
+        "status": "ended"
+      },
+      "filter": {
+        "name": "series is ended",
+        "conditions": [
+          [
+            {
+              "a": "{{9.status}}",
+              "b": "ended",
+              "o": "text:equal"
+            }
+          ]
+        ]
+      }
+    }
   ]
 }

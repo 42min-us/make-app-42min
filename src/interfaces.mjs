@@ -216,6 +216,35 @@ export const series = [
   date('ended_at', 'Ended at'),
 ];
 
+const occurrences = {
+  name: 'occurrences',
+  type: 'array',
+  label: 'Meetings booked',
+  spec: [text('uid', 'Booking UID'), date('start_at', 'Start'), date('end_at', 'End'), text('status', 'Status')],
+};
+
+const skipped = {
+  name: 'skipped',
+  type: 'array',
+  label: 'Dates skipped',
+  spec: [date('start_at', 'Date'), text('reason', 'Reason')],
+};
+
+// POST /series answers with the series plus what it just booked.
+export const seriesCreated = [...series, occurrences, skipped];
+
+// GET /series and /series/{uid} add where the series has got to.
+export const seriesWithProgress = [
+  ...series,
+  {
+    name: 'next_occurrence',
+    type: 'collection',
+    label: 'Next meeting',
+    spec: [text('uid', 'Booking UID'), date('start_at', 'Start')],
+  },
+  uint('remaining', 'Meetings still ahead'),
+];
+
 // Every series action answers with the same envelope, and fills in only the
 // fields that apply to it.
 export const seriesAction = [
@@ -226,10 +255,12 @@ export const seriesAction = [
   uint('moved', 'Meetings moved to the new host'),
   uint('unchanged', 'Meetings already with that host'),
   text('stopped_by', 'Stopped because'),
-  {
-    name: 'skipped',
-    type: 'array',
-    label: 'Dates skipped',
-    spec: [date('date', 'Date'), text('reason', 'Reason')],
-  },
+  skipped,
+];
+
+// PATCH /series/{uid} answers with the series plus, when the pattern changed,
+// what had to be rebooked.
+export const seriesUpdated = [
+  ...series,
+  { name: 'resumed', type: 'collection', label: 'Rebooking result', spec: seriesAction },
 ];

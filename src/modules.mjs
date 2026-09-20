@@ -671,7 +671,15 @@ const createSeries = {
       location_url: '{{parameters.location_url}}',
       notify_invitee: '{{parameters.notify_invitee}}',
     },
-    response: { output: '{{body.data}}' },
+    // Create answers with {series, occurrences, skipped}; the series is lifted
+    // to the top so a bundle looks the same as one from Get a series.
+    response: {
+      output: {
+        '{{...}}': '{{body.data.series}}',
+        occurrences: '{{body.data.occurrences}}',
+        skipped: '{{body.data.skipped}}',
+      },
+    },
   },
   expect: [
     eventTypeParam(),
@@ -720,7 +728,7 @@ const createSeries = {
     },
     idempotencyParam,
   ],
-  interface: I.series,
+  interface: I.seriesCreated,
 };
 
 const getSeries = {
@@ -735,7 +743,7 @@ const getSeries = {
     response: { output: '{{body.data}}' },
   },
   expect: [seriesUidParam],
-  interface: I.series,
+  interface: I.seriesWithProgress,
 };
 
 const listSeries = {
@@ -770,7 +778,7 @@ const listSeries = {
     { name: 'host_user_id', type: 'text', label: 'Host user ID' },
     { name: 'event_type_id', type: 'select', label: 'Event type', options: 'rpc://listEventTypesRpc' },
   ],
-  interface: I.series,
+  interface: I.seriesWithProgress,
 };
 
 // Like a booking update, a series update needs the version from a prior read.
@@ -798,7 +806,11 @@ const updateSeries = {
         location_url: '{{parameters.location_url}}',
         notify_invitee: '{{parameters.notify_invitee}}',
       },
-      response: { output: '{{body.data}}' },
+      // Update answers with {series, resumed}; `resumed` is null unless a
+      // pattern field changed and meetings had to move.
+      response: {
+        output: { '{{...}}': '{{body.data.series}}', resumed: '{{body.data.resumed}}' },
+      },
     },
   ],
   expect: [
@@ -812,7 +824,7 @@ const updateSeries = {
     },
     { name: 'notify_invitee', type: 'boolean', label: 'Email the attendee' },
   ],
-  interface: I.series,
+  interface: I.seriesUpdated,
 };
 
 const pauseSeries = {

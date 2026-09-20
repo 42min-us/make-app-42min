@@ -1,0 +1,10 @@
+{
+  "name": "end leftover test series",
+  "flow": [
+    { "module": "listSeries", "mapper": { "limit": 20, "status": "active" } },
+    { "module": "endSeries", "mapper": { "uid": "{{1.uid}}" },
+      "filter": { "name": "only series booked for the test invitee", "conditions": [[
+        { "a": "{{1.uid}}", "o": "exist" },
+        { "a": "{{1.attendee.email}}", "b": "dev.test.user+make@42min.us", "o": "text:equal" } ]] } }
+  ]
+}
