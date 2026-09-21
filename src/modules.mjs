@@ -877,12 +877,24 @@ const changeSeriesHost = {
   name: 'changeSeriesHost',
   typeId: ACTION,
   label: 'Change the host of a series',
-  description: 'Moves the series and the meetings still to come to another host.',
+  description:
+    'Moves the series and the meetings still to come to another host. Fails with the reason when the new host cannot take them, for example when they have no calendar for the meeting link.',
   api: {
     url: `/v1/series/${seriesUid}/host`,
     method: 'POST',
     body: { host_user_id: '{{parameters.host_user_id}}' },
-    response: { output: '{{body.data}}' },
+    // A run that stops early still answers 200, with the reason in
+    // stopped_by and the series left with its old host. Reported as success,
+    // that would look like the move happened, so it is raised as an error.
+    response: {
+      valid: '{{!body.data.stopped_by}}',
+      error: {
+        message:
+          "The host was not changed: {{body.data.stopped_by}}. {{body.data.moved}} meeting(s) moved before it stopped; the call can be repeated once the cause is fixed.",
+        type: 'DataError',
+      },
+      output: '{{body.data}}',
+    },
   },
   expect: [
     seriesUidParam,

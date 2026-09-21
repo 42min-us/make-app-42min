@@ -1,0 +1,18 @@
+{
+  "name": "review 2, recurring series",
+  "flow": [
+    { "module": "getCurrentUser", "mapper": {} },
+    { "module": "getEventType", "mapper": { "identify_by": "slug", "username": "weje", "event_slug": "rec-evt" } },
+    { "module": "createSeries", "mapper": {
+        "identify_by": "id", "event_type_id": "{{2.id}}", "host_user_id": "{{1.user.id}}",
+        "attendee_email": "dev.test.user+make@42min.us", "attendee_name": "Make review series",
+        "frequency": "weekly", "weekdays": ["mon", "tue", "wed", "thu", "fri"],
+        "time": "10:00", "starts_on": "{{addDays(now, 1)}}", "count": 2, "notify_invitee": false } },
+    { "module": "getSeries", "mapper": { "uid": "{{3.uid}}" } },
+    { "module": "updateSeries", "mapper": { "uid": "{{3.uid}}", "time": "11:00" } },
+    { "module": "pauseSeries", "mapper": { "uid": "{{3.uid}}" } },
+    { "module": "resumeSeries", "mapper": { "uid": "{{3.uid}}" } },
+    { "module": "endSeries", "mapper": { "uid": "{{3.uid}}" } },
+    { "module": "listSeries", "mapper": { "limit": 5, "status": "ended" } }
+  ]
+}

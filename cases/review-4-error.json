@@ -1,0 +1,6 @@
+{
+  "name": "review 4, error handling",
+  "flow": [
+    { "module": "getBooking", "mapper": { "uid": "00000000-0000-4000-8000-000000000000" } }
+  ]
+}

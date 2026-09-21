@@ -1,0 +1,70 @@
+{
+  "name": "series change of host",
+  "flow": [
+    {
+      "module": "getCurrentUser",
+      "mapper": {}
+    },
+    {
+      "module": "getEventType",
+      "mapper": {
+        "identify_by": "slug",
+        "username": "weje",
+        "event_slug": "rec-evt"
+      }
+    },
+    {
+      "module": "createSeries",
+      "mapper": {
+        "identify_by": "id",
+        "event_type_id": "{{2.id}}",
+        "host_user_id": "{{1.user.id}}",
+        "attendee_email": "dev.test.user+make@42min.us",
+        "attendee_name": "Make host change test",
+        "frequency": "weekly",
+        "weekdays": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "time": "10:00",
+        "starts_on": "{{addDays(now, 1)}}",
+        "count": 2,
+        "notify_invitee": false
+      }
+    },
+    {
+      "module": "changeSeriesHost",
+      "mapper": {
+        "uid": "{{3.uid}}",
+        "host_user_id": "a36b368d-4d12-46e3-80a8-de5f58b5aa00"
+      }
+    },
+    {
+      "module": "getSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      }
+    },
+    {
+      "module": "endSeries",
+      "mapper": {
+        "uid": "{{3.uid}}"
+      },
+      "filter": {
+        "name": "series now belongs to the test user",
+        "conditions": [
+          [
+            {
+              "a": "{{5.host.user_id}}",
+              "b": "a36b368d-4d12-46e3-80a8-de5f58b5aa00",
+              "o": "text:equal"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}
