@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { app as appMeta, base, connection, groups } from '../src/app.mjs';
 import { modules } from '../src/modules.mjs';
 import { rpcs } from '../src/rpcs.mjs';
+import { samples } from '../src/samples.mjs';
 import { webhooks, signatureProbe } from '../src/webhooks.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -148,6 +149,8 @@ async function main() {
         // A trigger belongs to its webhook, which carries the connection.
         ...(m.webhook ? {} : { connection: conn }),
       });
+      // The module action only sticks when patched on its own.
+      if (m.crud) await call('PATCH', `/sdk/apps/${name}/${version}/modules/${m.name}`, { crud: m.crud });
     }
     const put = (section, payload) =>
       call('PUT', `/sdk/apps/${name}/${version}/modules/${m.name}/${section}`, withOrigin(payload));
@@ -155,6 +158,7 @@ async function main() {
     await put('parameters', m.parameters ?? []);
     if (!m.webhook) await put('expect', m.expect ?? []);
     await put('interface', m.interface ?? []);
+    if (samples[m.name]) await put('samples', samples[m.name]);
     console.log(`module ${m.name}`);
   }
 

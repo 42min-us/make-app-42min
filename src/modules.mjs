@@ -77,6 +77,8 @@ const eventTypeParam = (required = true) => ({
           label: 'Event type',
           required,
           options: 'rpc://listEventTypesRpc',
+          // Lets the user map an ID from an earlier module instead of picking.
+          mode: 'edit',
         },
       ],
     },
@@ -230,6 +232,7 @@ const getBooking = {
 const updateBooking = {
   name: 'updateBooking',
   typeId: ACTION,
+  crud: 'update',
   label: 'Update a booking',
   description:
     "Updates a booking's attendee name, metadata or invitee answers. To move a booking to another time use the Reschedule a booking module; to call it off use Cancel a booking.",
@@ -346,7 +349,6 @@ const listBookings = {
     pagination: cursorPagination,
   },
   expect: [
-    limitParam('bookings'),
     {
       name: 'status',
       type: 'select',
@@ -363,6 +365,7 @@ const listBookings = {
       type: 'select',
       label: 'Event type',
       options: 'rpc://listEventTypesRpc',
+      mode: 'edit',
     },
     { name: 'start_date', type: 'date', label: 'Starting from', help: 'Only bookings that start at or after this time.' },
     { name: 'end_date', type: 'date', label: 'Starting before', help: 'Only bookings that start before this time.' },
@@ -400,6 +403,7 @@ const listBookings = {
         { label: 'Created, oldest first', value: 'created_at_asc' },
       ],
     },
+    limitParam('bookings'),
   ],
   interface: I.booking,
 };
@@ -516,7 +520,6 @@ const listEventTypes = {
     pagination: cursorPagination,
   },
   expect: [
-    limitParam('event types'),
     {
       name: 'active',
       type: 'boolean',
@@ -525,6 +528,7 @@ const listEventTypes = {
     },
     { name: 'user_id', type: 'text', label: 'Host user ID', help: 'Only event types hosted by this user.' },
     { name: 'slug', type: 'text', label: 'Slug' },
+    limitParam('event types'),
   ],
   interface: I.eventType,
 };
@@ -764,7 +768,6 @@ const listSeries = {
     pagination: cursorPagination,
   },
   expect: [
-    limitParam('series'),
     {
       name: 'status',
       type: 'select',
@@ -776,7 +779,8 @@ const listSeries = {
       ],
     },
     { name: 'host_user_id', type: 'text', label: 'Host user ID' },
-    { name: 'event_type_id', type: 'select', label: 'Event type', options: 'rpc://listEventTypesRpc' },
+    { name: 'event_type_id', type: 'select', label: 'Event type', options: 'rpc://listEventTypesRpc', mode: 'edit' },
+    limitParam('series'),
   ],
   interface: I.seriesWithProgress,
 };
@@ -785,6 +789,7 @@ const listSeries = {
 const updateSeries = {
   name: 'updateSeries',
   typeId: ACTION,
+  crud: 'update',
   label: 'Update a series',
   description:
     'Changes a series pattern, its fixed link or whether the attendee is emailed. Changing the pattern rebooks the meetings still to come. The start date, the number of meetings, the attendee and the event type cannot be changed.',

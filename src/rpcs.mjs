@@ -15,7 +15,8 @@ export const rpcs = [
           label: "{{item.title}} ({{item.duration_minutes}} min){{if(item.hosts, ' - ' + join(map(item.hosts, 'username'), ', '), '')}}",
           value: '{{item.id}}',
         },
-        limit: 500,
+        // The API caps a page at 100, so 300 keeps the picker to three requests.
+        limit: 300,
       },
       pagination: {
         qs: { cursor: '{{body.meta.next_cursor}}' },

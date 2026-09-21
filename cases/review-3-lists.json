@@ -1,8 +1,7 @@
 {
   "name": "review 3, lists and pagination",
   "flow": [
-    { "module": "getCurrentUser", "mapper": {} },
-    { "module": "makeApiCall", "mapper": { "url": "/v1/me", "method": "GET", "headers": [], "qs": [] } },
-    { "module": "listBookings", "mapper": { "limit": 120, "include_cancelled": true, "sort": "start_at_desc" } }
+    { "module": "makeApiCall", "mapper": { "url": "/v1/event-types", "method": "GET", "headers": [], "qs": [{ "key": "limit", "value": "1" }] } },
+    { "module": "listBookings", "mapper": { "limit": 120, "include_cancelled": true, "attendee_email": "dev.test.user+make-seed@42min.us", "sort": "start_at_desc" } }
   ]
 }

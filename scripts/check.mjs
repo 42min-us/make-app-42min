@@ -6,6 +6,7 @@ import { base, connection, groups } from '../src/app.mjs';
 import { modules } from '../src/modules.mjs';
 import { rpcs } from '../src/rpcs.mjs';
 import { webhooks } from '../src/webhooks.mjs';
+import { samples } from '../src/samples.mjs';
 
 const SEARCH = 9;
 const INSTANT = 10;
@@ -89,6 +90,38 @@ for (const w of webhooks) {
     if (!stored.includes(key)) fail(`${w.name}: detach uses webhook.${key}, which attach never stored`);
   }
   if (!w.attach.body?.url?.includes('webhook.url')) fail(`${w.name}: attach does not register the webhook URL`);
+}
+
+// A trigger's interface must declare exactly what its webhook outputs, or users
+// see fields that never fill and miss ones that do. Spread keys ({{...}}) pass a
+// whole record through and are not compared.
+for (const m of modules.filter((x) => x.typeId === INSTANT)) {
+  const hook = webhooks.find((w) => w.name === m.webhook);
+  const out = hook?.api?.output;
+  if (!out || typeof out !== 'object') continue;
+  const outKeys = Object.keys(out).filter((k) => !k.startsWith('{{'));
+  const ifaceKeys = (m.interface ?? []).map((f) => f.name);
+  if (Object.keys(out).some((k) => k.startsWith('{{'))) continue;
+  for (const k of outKeys) if (!ifaceKeys.includes(k)) fail(`${m.name}: outputs "${k}" but does not declare it`);
+  for (const k of ifaceKeys) if (!outKeys.includes(k)) fail(`${m.name}: declares "${k}" but never outputs it`);
+  for (const f of m.interface ?? []) {
+    const o = out[f.name];
+    const inner = Array.isArray(o) ? o[0] : o;
+    if (!inner || typeof inner !== 'object' || !Array.isArray(f.spec)) continue;
+    const a = Object.keys(inner).sort().join(',');
+    const b = f.spec.map((x) => x.name).sort().join(',');
+    if (a !== b) fail(`${m.name}.${f.name}: outputs [${a}] but declares [${b}]`);
+  }
+}
+
+// Every search and trigger ships a sample, and a sample uses only declared fields.
+for (const m of modules) {
+  const sample = samples[m.name];
+  if ((m.typeId === SEARCH || m.typeId === INSTANT) && !sample) fail(`${m.name}: no sample`);
+  if (!sample) continue;
+  const declared = (m.interface ?? []).map((f) => f.name);
+  for (const k of Object.keys(sample)) if (!declared.includes(k)) fail(`${m.name}: sample has undeclared "${k}"`);
+  for (const k of declared) if (!(k in sample)) fail(`${m.name}: sample is missing "${k}"`);
 }
 
 // RPCs

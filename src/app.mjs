@@ -71,14 +71,14 @@ export const groups = [
   { label: 'Triggers', modules: ['watchBookings', 'watchEventTypes', 'watchRoutingForms'] },
   {
     label: 'Bookings',
-    modules: ['createBooking', 'getBooking', 'updateBooking', 'rescheduleBooking', 'cancelBooking', 'listBookings'],
+    modules: ['listBookings', 'getBooking', 'createBooking', 'updateBooking', 'rescheduleBooking', 'cancelBooking'],
   },
   { label: 'Availability', modules: ['listSlots', 'checkSlot'] },
   {
     label: 'Recurring series',
-    modules: ['createSeries', 'getSeries', 'listSeries', 'updateSeries', 'pauseSeries', 'resumeSeries', 'endSeries', 'changeSeriesHost'],
+    modules: ['listSeries', 'getSeries', 'createSeries', 'updateSeries', 'pauseSeries', 'resumeSeries', 'changeSeriesHost', 'endSeries'],
   },
-  { label: 'Event types', modules: ['getEventType', 'listEventTypes'] },
+  { label: 'Event types', modules: ['listEventTypes', 'getEventType'] },
   { label: 'Account', modules: ['getCurrentUser'] },
   { label: 'Other', modules: ['makeApiCall'] },
 ];

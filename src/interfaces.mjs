@@ -154,13 +154,55 @@ const envelopeFields = [
   text('delivery_id', 'Delivery ID'),
 ];
 
+// Mirrors the webhook's output field for field (src/webhooks.mjs). A delivery
+// is not the REST booking: the host carries a name but no username, the
+// attendee carries a phone, and guests arrive as the booking stored them
+// (email strings or objects), so they are declared as `any`.
 export const bookingEvent = [
   ...envelopeFields,
-  ...booking.filter((f) => !['version', 'event_type_slug', 'calendar_sync_status', 'calendar_event_id', 'rescheduled_from_uid', 'created_at', 'updated_at'].includes(f.name)),
+  text('uid', 'Booking UID'),
+  text('event_type_id', 'Event type ID'),
+  text('title', 'Title'),
+  text('status', 'Status'),
+  date('start_at', 'Start'),
+  date('end_at', 'End'),
+  text('timezone', 'Timezone'),
+  {
+    name: 'host',
+    type: 'collection',
+    label: 'Host',
+    spec: [text('user_id', 'User ID'), { name: 'email', type: 'email', label: 'Email' }, text('name', 'Name')],
+  },
+  {
+    name: 'attendees',
+    type: 'array',
+    label: 'Attendees',
+    spec: [
+      { name: 'email', type: 'email', label: 'Email' },
+      text('name', 'Name'),
+      text('phone', 'Phone'),
+      text('timezone', 'Timezone'),
+    ],
+  },
+  { name: 'guests', type: 'any', label: 'Guests' },
+  {
+    name: 'location',
+    type: 'collection',
+    label: 'Location',
+    spec: [{ name: 'url', type: 'url', label: 'Meeting link' }, text('value', 'Location')],
+  },
+  { name: 'metadata', type: 'any', label: 'Metadata' },
+  { name: 'responses', type: 'any', label: 'Answers to invitee questions' },
   { name: 'responses_by_id', type: 'any', label: 'Answers by question ID' },
   { name: 'routing_form_answers', type: 'any', label: 'Routing form answers' },
+  date('cancelled_at', 'Canceled at'),
+  text('cancellation_reason', 'Cancellation reason'),
+  date('no_show_at', 'Marked as no-show at'),
+  text('no_show_reason', 'No-show reason'),
   date('rescheduled_at', 'Rescheduled at'),
   uint('reschedule_generation', 'Reschedule number'),
+  text('series_id', 'Series ID'),
+  uint('series_index', 'Position in series'),
   date('previous_start_at', 'Previous start'),
   date('previous_end_at', 'Previous end'),
   { name: 'changed_fields', type: 'array', label: 'Changed fields', spec: { name: 'field', type: 'text', label: 'Field' } },
