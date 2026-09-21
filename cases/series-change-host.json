@@ -1,5 +1,5 @@
 {
-  "name": "series change of host",
+  "name": "review 8, change the host of a series",
   "flow": [
     {
       "module": "getCurrentUser",
@@ -10,7 +10,7 @@
       "mapper": {
         "identify_by": "slug",
         "username": "weje",
-        "event_slug": "rec-evt"
+        "event_slug": "rec-link"
       }
     },
     {
