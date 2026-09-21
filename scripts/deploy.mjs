@@ -172,6 +172,11 @@ async function main() {
   // Module order in the app's menu
   await call('PUT', `/sdk/apps/${name}/${version}/groups`, groups);
 
+  // App description and the documentation shown on the app's page
+  await call('PATCH', `/sdk/apps/${name}/${version}`, { description: appMeta.description, theme: appMeta.theme });
+  const readme = await readFile(path.join(ROOT, 'src', 'readme.md'));
+  await call('PUT', `/sdk/apps/${name}/${version}/readme`, readme, 'text/markdown');
+
   // Icon
   const icon = await readFile(path.join(ROOT, 'assets', 'logo.png'));
   await call('PUT', `/sdk/apps/${name}/${version}/icon`, icon, 'image/png');

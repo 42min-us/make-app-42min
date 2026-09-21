@@ -8,7 +8,7 @@
 export const app = {
   label: '42min',
   description:
-    'Online meeting scheduling. Book meetings, check availability and manage bookings in 42min.',
+    'Online meeting scheduling. Check availability, book and manage meetings and recurring series, and react to new bookings and routing form submissions.',
   theme: '#f25c2c',
   language: 'en',
   countries: [],
